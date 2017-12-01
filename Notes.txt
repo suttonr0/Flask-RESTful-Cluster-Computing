@@ -4,3 +4,8 @@ https://git-scm.com/book/en/v2/Git-Internals-Git-Objects
 DO HARD RESET PULL FOR EACH COMMIT:
 https://stackoverflow.com/questions/11990090/git-pull-based-on-sha
 
+
+# create a local branch with the same name as theirs (though can be anything)
+git checkout -b <theirbranchname> 
+# Pull their changes into the local branch
+git pull <remote> <theirbranchname>
