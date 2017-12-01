@@ -15,8 +15,8 @@ class cyclomaticApi(Resource):
         self.reqparser = reqparse.RequestParser()
 
         # For every value coming in JSON, you need an argument
-        self.reqparser.add_argument('commit', type=str, location = 'json')  # Repeat for multiple variables
-        self.reqparser.add_argument('complexity', type=str, location='json')
+        self.reqparser.add_argument('commitSha', type=str, location = 'json')  # Repeat for multiple variables
+        self.reqparser.add_argument('complexity', type=float, location='json')
         # self.reqparser.add_argument('version', type=int, location='json')
 
     def get(self):
@@ -27,6 +27,9 @@ class cyclomaticApi(Resource):
 
 
     def post(self):
+        args = self.reqparser.parse_args()  # parse the arguments from the POST
+        print("Received sha {}".format(args['commitSha']))
+        print("Received complexity {}".format(args['complexity']))
         return {'success':True}
 
 #  Created a route at /cyclomatic with an endpoint called cyclomatic
