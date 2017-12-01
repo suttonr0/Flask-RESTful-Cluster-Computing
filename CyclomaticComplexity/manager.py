@@ -9,8 +9,8 @@ api = Api(app)
 #  API for dealing with the list of files as a whole
 class cyclomaticApi(Resource):
     def __init__(self):  # Upon initialisation of the class
-        global fileS  # Init the global server
-        self.server = fileS  # Init the global server
+        global managerS  # Init the global server
+        self.server = managerS  # Init the global server
         super(cyclomaticApi, self).__init__()  # Initialising the Resource class
         self.reqparser = reqparse.RequestParser()
 
@@ -20,8 +20,10 @@ class cyclomaticApi(Resource):
         # self.reqparser.add_argument('version', type=int, location='json')
 
     def get(self):
-        commitValue = self.server.commitList[self.server.nextCommitToGive]
-        self.server.nextCommitToGive += 1  # Move to next commit to hand out
+        if len(self.server.commitList) == 0:
+            return {'sha': -1}
+        commitValue = self.server.commitList[0]
+        del self.server.commitList[0]  # Remove item from list of commits to compute
         print("Sent: {}".format(commitValue))
         return {'sha':commitValue}
 
@@ -30,13 +32,24 @@ class cyclomaticApi(Resource):
         args = self.reqparser.parse_args()  # parse the arguments from the POST
         print("Received sha {}".format(args['commitSha']))
         print("Received complexity {}".format(args['complexity']))
+        self.server.listOfCCs.append({'sha':args['commitSha'], 'complexity':args['complexity']})
+        print(self.server.listOfCCs)
+        print(self.server.commitList)
+        if len(self.server.commitList) == 0:
+            print("finished")
+            print(len(self.server.listOfCCs))
+            totalAverageCC = 0
+            for x in self.server.listOfCCs:
+                totalAverageCC += x['complexity']
+            totalAverageCC = totalAverageCC / len(self.server.listOfCCs)
+            print("OVERALL CYCLOMATIC COMPLEXITY FOR REPOSITORY: {}".format(totalAverageCC))
         return {'success':True}
 
 #  Created a route at /cyclomatic with an endpoint called cyclomatic
 api.add_resource(cyclomaticApi, "/cyclomatic", endpoint="cyclomatic")
 
 
-class fileServer():
+class managerServer():
     def __init__(self):
         r = requests.get("https://api.github.com/repos/fchollet/deep-learning-models/commits")
         json_data = json.loads(r.text)
@@ -45,9 +58,11 @@ class fileServer():
             self.commitList.append(x['sha'])
             print("Commit Sha: {}".format(x['sha']))
         print("\n")
-        self.nextCommitToGive = 0
+        self.totalNumberOfCommits = len(self.commitList)
+        self.listOfCCs = []
+        print("Number of commits: {}".format(self.totalNumberOfCommits))
 
 
 if __name__ == "__main__":
-    fileS = fileServer()  # Fill fileS with the init values of class fileServer
+    managerS = managerServer()  # ini an instance of managerServer()
     app.run(port=5000, debug=True)  # int(sys.argv[1])
