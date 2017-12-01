@@ -22,7 +22,7 @@ class cyclomaticApi(Resource):
     def get(self):
         commitValue = self.server.commitList[self.server.nextCommitToGive]
         self.server.nextCommitToGive += 1  # Move to next commit to hand out
-        print("Sent: ".format(commitValue))
+        print("Sent: {}".format(commitValue))
         return {'sha':commitValue}
 
 
