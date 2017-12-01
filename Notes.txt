@@ -1,8 +1,11 @@
 https://git-scm.com/book/en/v2/Git-Tools-Revision-Selection
 https://git-scm.com/book/en/v2/Git-Internals-Git-Objects
 
-DO HARD RESET PULL FOR EACH COMMIT:
-https://stackoverflow.com/questions/11990090/git-pull-based-on-sha
+# If current directory contains workerData
+radon cc -s -a "workerData" 
+
+# remember to put quotation marks around file path
+"/home/rowan/Documents/Trinity 4/Cyclomatic Assignment/CyclomaticComplexity/workerData" 
 
 
 Pull by SHA:
