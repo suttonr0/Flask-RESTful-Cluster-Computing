@@ -24,6 +24,8 @@ class getRepository(Resource):
             return {'repo': 'https://github.com/fchollet/deep-learning-models'}
         if args['pullStatus'] == True:  # Repo has been pulled, can now increment
             self.server.currNumWorkers += 1
+            if self.server.currNumWorkers == self.server.numWorkers:
+                self.server.startTime = time.time()
             print("WORKER NUMBER: {}".format(self.server.currNumWorkers))
     def post(self):
         pass
@@ -64,14 +66,15 @@ class cyclomaticApi(Resource):
         print(self.server.listOfCCs)
         print(self.server.commitList)
         if len(self.server.listOfCCs) == self.server.totalNumberOfCommits:
-            print("finished")
+            endTime = time.time() - self.server.startTime
+            print("finished in {} seconds".format(endTime))
             print(len(self.server.listOfCCs))
             totalAverageCC = 0
             for x in self.server.listOfCCs:
                 if x['complexity'] > 0:
                     totalAverageCC += x['complexity']
                 else:
-                    print("{} has no computable files".format(x['sha']))
+                    print("Commit {} has no computable files".format(x['sha']))
             totalAverageCC = totalAverageCC / len(self.server.listOfCCs)
             print("OVERALL CYCLOMATIC COMPLEXITY FOR REPOSITORY: {}".format(totalAverageCC))
         return {'success':True}
@@ -83,8 +86,11 @@ api.add_resource(cyclomaticApi, "/cyclomatic", endpoint="cyclomatic")
 class managerServer():
     def __init__(self):
         self.numWorkers = input("Enter number of worker nodes: ")
+        # self.repoDirectory = input("Enter the URL for the repository")
         self.numWorkers = int(self.numWorkers)
         self.currNumWorkers = 0
+        self.startTime = 0.0
+        # request repository info using the github API
         r = requests.get("https://api.github.com/repos/fchollet/deep-learning-models/commits")
         json_data = json.loads(r.text)
         self.commitList = []  # List containing all commit sha values
@@ -92,7 +98,7 @@ class managerServer():
             self.commitList.append(x['sha'])
             print("Commit Sha: {}".format(x['sha']))
         print("\n")
-        self.totalNumberOfCommits = len(self.commitList)
+        self.totalNumberOfCommits = len(self.commitList)  # Total number of commits in repo
         self.listOfCCs = []
         print("Number of commits: {}".format(self.totalNumberOfCommits))
 
