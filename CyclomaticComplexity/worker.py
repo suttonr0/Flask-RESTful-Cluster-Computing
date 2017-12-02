@@ -3,6 +3,7 @@ import json, requests, subprocess
 def run():
     managerIP = input("Enter the IP of the manager: ")
     managerPort = input("Enter the port of the manager: ")
+    numCommitsDone = 0
 
     r = requests.get("http://{}:{}/repo".format(managerIP,managerPort), json={'pullStatus': False})  # Don't have repo yet
     json_data = json.loads(r.text)
@@ -37,6 +38,8 @@ def run():
                 averageCC = float(radonCCOutput[avgCCstartPos+1:-2])  # Get the average cyclomatic complexity from the output
                 r = requests.post("http://{}:{}/cyclomatic".format(managerIP,managerPort),
                                   json={'commitSha': json_data['sha'], 'complexity': averageCC})
+            numCommitsDone += 1  # Increment the number of commits this node has completed
+    print("Completed having computed {} commits (including non-computable commits)".format(numCommitsDone))
 
 if __name__ == "__main__":
     run()
