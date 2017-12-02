@@ -93,7 +93,7 @@ class managerServer():
         # request repository info using the github API
         print("Authenticated Github API requests have a rate limit of 5000 per hour to the Github API")
         print("Unauthenticated requests have a limit of 60 requests per hour")
-        gitUsername = input("Type your Github username, or press return to not use authenitcated requests: ")
+        gitUsername = input("Type your Github username to use authenticated requests, or press return to use unauthenitcated requests: ")
         print(len(gitUsername))
         if len(gitUsername) != 0:
             gitPassword = getpass.getpass("Type your Github password (input is hidden): ")
