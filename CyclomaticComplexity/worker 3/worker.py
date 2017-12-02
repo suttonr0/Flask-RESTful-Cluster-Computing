@@ -6,7 +6,7 @@ def run():
 
     r = requests.get("http://{}:{}/repo".format(managerIP,managerPort), json={'pullStatus': False})  # Don't have repo yet
     json_data = json.loads(r.text)
-    repoUrl = json_data['repo']
+    repoUrl = json_data['repo']# "https://github.com/fchollet/deep-learning-models"
     subprocess.call(["bash", "workerInitScript.sh", repoUrl])
 
     r = requests.get("http://{}:{}/repo".format(managerIP,managerPort), json={'pullStatus': True})  # Have repo and are now ready

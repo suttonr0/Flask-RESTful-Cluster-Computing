@@ -1,6 +1,6 @@
 from flask import Flask
 from flask_restful import Resource, Api, reqparse
-import os, sys, json, requests, time
+import os, sys, json, requests, time, getpass
 
 
 app = Flask(__name__)
@@ -21,11 +21,11 @@ class getRepository(Resource):
         args = self.reqparser.parse_args()
         if args['pullStatus'] == False:  # Repo hasn't been pulled yet
             print("GOT 1")
-            return {'repo': 'https://github.com/fchollet/deep-learning-models'}
+            return {'repo': "https://github.com/python/bedevere"}  # 'https://github.com/fchollet/deep-learning-models'
         if args['pullStatus'] == True:  # Repo has been pulled, can now increment
             self.server.currNumWorkers += 1
             if self.server.currNumWorkers == self.server.numWorkers:
-                self.server.startTime = time.time()
+                self.server.startTime = time.time()  # Start the timer
             print("WORKER NUMBER: {}".format(self.server.currNumWorkers))
     def post(self):
         pass
@@ -88,16 +88,33 @@ class managerServer():
         self.numWorkers = input("Enter number of worker nodes: ")
         # self.repoDirectory = input("Enter the URL for the repository")
         self.numWorkers = int(self.numWorkers)
-        self.currNumWorkers = 0
-        self.startTime = 0.0
+        self.currNumWorkers = 0  # Number of workers who have connected to the manager
+        self.startTime = 0.0  # Start time for the timer
         # request repository info using the github API
-        r = requests.get("https://api.github.com/repos/fchollet/deep-learning-models/commits")
-        json_data = json.loads(r.text)
+        print("Authenticated Github API requests have a rate limit of 5000 per hour to the Github API")
+        print("Unauthenticated requests have a limit of 60 requests per hour")
+        gitUsername = input("Type your Github username, or press return to not use authenitcated requests: ")
+        print(len(gitUsername))
+        if len(gitUsername) != 0:
+            gitPassword = getpass.getpass("Type your Github password (input is hidden): ")
+        morePages = True  # Loop control variable to check if more pages on github API
+        currentPage = 1  # Current page of github API repo info
         self.commitList = []  # List containing all commit sha values
-        for x in json_data:
-            self.commitList.append(x['sha'])
-            print("Commit Sha: {}".format(x['sha']))
-        print("\n")
+        while morePages:
+            if len(gitUsername) == 0:
+                r = requests.get("https://api.github.com/repos/python/bedevere/commits?page={}&per_page=100".format(currentPage))  # "https://api.github.com/repos/fchollet/deep-learning-models/commits"
+            else:
+                r = requests.get("https://api.github.com/repos/python/bedevere/commits?page={}&per_page=100".format(currentPage), auth=(gitUsername, gitPassword))
+            json_data = json.loads(r.text)
+            if len(json_data) < 2:
+                morePages = False
+                print("All pages iterated through")
+            else:
+                for x in json_data:
+                    self.commitList.append(x['sha'])
+                    print("Commit Sha: {}".format(x['sha']))
+                print("\n")
+                currentPage += 1
         self.totalNumberOfCommits = len(self.commitList)  # Total number of commits in repo
         self.listOfCCs = []
         print("Number of commits: {}".format(self.totalNumberOfCommits))
@@ -105,4 +122,4 @@ class managerServer():
 
 if __name__ == "__main__":
     managerS = managerServer()  # ini an instance of managerServer()
-    app.run(port=5000, debug=True)  # int(sys.argv[1])
+    app.run(port=5000)  # int(sys.argv[1])  , debug=True
