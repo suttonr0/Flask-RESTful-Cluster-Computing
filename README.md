@@ -1,6 +1,6 @@
 Dependencies of Python3, Flask, Flask-RESTful, requests, radon
 
-Flask, Flask-RESTful, requests and radon can be installed via pip
+Dependencies can be installed through the installDependencies.sh script
 
 Rowan Sutton
 13330793

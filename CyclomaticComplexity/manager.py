@@ -1,6 +1,6 @@
 from flask import Flask
 from flask_restful import Resource, Api, reqparse
-import os, sys, json, requests, time, getpass
+import json, requests, time, getpass
 
 
 app = Flask(__name__)
