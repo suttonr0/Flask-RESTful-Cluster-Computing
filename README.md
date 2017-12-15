@@ -7,7 +7,7 @@ Rowan Sutton
 
 Repository used: https://github.com/python/bedevere
 
-This project uses a manager node to distribute commits from a Github repository to worker nodes. These worker nodes use the work stealing method, where they request the SHA for a commit whenever they are free to do work.
+This project computes the cyclomatic complexity for a given Python Github repository. A manager node distributes commit SHAs from a Github repository to worker nodes. These worker nodes use the work stealing method, where they request the SHA for a commit whenever they are free to do work and pull the commit themselves for Github.
 
 To start the system, the manager node (manager.py) must be started first either directly ("python3 manager.py") or via the startManager.sh script (which does the same thing). Once the manager is started, it will request the number of nodes that it will use. After this is inputted, the workers can be started (either directly or by the startWorker.sh script). Each worker must be located in a separate directory location to the other workers. In addition, the workerData folder, workerGetCommit.sh and workerInitScript.sh must be in the same directory as the worker.py file for each worker.
 

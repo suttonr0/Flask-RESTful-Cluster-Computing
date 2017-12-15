@@ -8,28 +8,30 @@ def run():
     r = requests.get("http://{}:{}/repo".format(managerIP,managerPort), json={'pullStatus': False})  # Don't have repo yet
     json_data = json.loads(r.text)
     repoUrl = json_data['repo']
-    subprocess.call(["bash", "workerInitScript.sh", repoUrl])
+    subprocess.call(["bash", "workerInitScript.sh", repoUrl])  # Call the initialisation script to pull repo
 
     r = requests.get("http://{}:{}/repo".format(managerIP,managerPort), json={'pullStatus': True})  # Have repo and are now ready
 
     stillHaveCommits = True
     while stillHaveCommits:
-        r = requests.get("http://{}:{}/cyclomatic".format(managerIP,managerPort)) # hardcode for now
+        r = requests.get("http://{}:{}/cyclomatic".format(managerIP,managerPort))  # get commit from manager
         json_data = json.loads(r.text)
         print(json_data)
         print("Received: {}".format(json_data['sha']))
         if json_data['sha'] == -2:  # Polling for manager to start giving commits
+            # (manager is still setting up or waiting on workers)
            print("Polling")
         else:
             if json_data['sha'] == -1:
                 print("No items left")
                 break
             subprocess.call(["bash", "workerGetCommit.sh", json_data['sha']])
+            # Call radon on the python repository and store its output
             binRadonCCOutput = subprocess.check_output(["radon", "cc", "-s", "-a" , "workerData"])
-            radonCCOutput = binRadonCCOutput.decode("utf-8")  # Convert from binary to tring
-
+            radonCCOutput = binRadonCCOutput.decode("utf-8")  # Convert radon output from binary to string
             print(radonCCOutput)
-            avgCCstartPos = radonCCOutput.rfind("(")  # Find last open bracket in radon output
+            # Find last open bracket in radon output to find location of calculated average for repository
+            avgCCstartPos = radonCCOutput.rfind("(")
             if radonCCOutput[avgCCstartPos+1:-2] == "":  # There are no files which radon can calculate C.C. for
                 print("NO RELEVENT FILES")
                 r = requests.post("http://{}:{}/cyclomatic".format(managerIP,managerPort),
